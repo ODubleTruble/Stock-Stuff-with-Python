@@ -2,30 +2,6 @@ import yfinance as yf
 import pandas as pd
 
 
-DOJI_LIMIT = 0.12
-
-
-# The ticker of the stock we want to download data from. 
-ticker = 'TSLA'
-
-# The start and end date for data to download. 
-start_date = '2020-01-01'
-end_date = '2022-12-21'
-
-# Downloads historical data on the ticker from the start to end date.
-data = yf.download(ticker, start_date, end_date)
-
-# Makes it so you can refer to the data on individuals dates by
-# their index number instead of a string representing the date.
-data['Date'] = data.index
-data = data[["Date", "Open", "High","Low", "Close", "Adj Close", "Volume"]]
-data.reset_index(drop=True, inplace=True)
-
-# Turns the data into a pandas dataframe.
-df = pd.DataFrame(data, columns = ['Date', 'Open', 'High', 'Low',
-                                   'Close', 'Adj Close', 'Volume'])
-
-
 # Determines if a candle is bullish (returns 1), bearish (2), or a doji (3).
 def candle_type(candle):
     '''
@@ -70,7 +46,7 @@ def candle_type(candle):
 
 
 # Function to find the number of doji, bullish candles, and bearish candles
-def find_candle_types():
+def find_candle_types(df):
     # the number of each type of candle
     num_doji = 0
     num_bull = 0
@@ -92,4 +68,36 @@ def find_candle_types():
     return [num_doji, num_bull, num_bear]
 
 
-print(find_candle_types())
+def main():
+    # This is explained in candle_type().
+    global DOJI_LIMIT
+    DOJI_LIMIT = 0.12
+    
+    
+    # The ticker of the stock we want to download data from. 
+    ticker = 'TSLA'
+
+    # The start and end date for data to download. 
+    start_date = '2020-01-01'
+    end_date = '2022-12-21'
+
+    # Downloads historical data on the ticker from the start to end date.
+    data = yf.download(ticker, start_date, end_date)
+
+    # Makes it so you can refer to the data on individuals dates by
+    # their index number instead of a string representing the date.
+    data['Date'] = data.index
+    data = data[["Date", "Open", "High","Low", "Close", "Adj Close", "Volume"]]
+    data.reset_index(drop=True, inplace=True)
+
+    # Turns the data into a pandas dataframe.
+    df = pd.DataFrame(data, columns = ['Date', 'Open', 'High', 'Low',
+                                       'Close', 'Adj Close', 'Volume'])
+    
+    
+    print(find_candle_types(df))
+
+
+if __name__ == "__main__":
+    main()
+
