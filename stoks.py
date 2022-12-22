@@ -65,7 +65,7 @@ def candle_type(candle):
         return 'bear'
 
 
-# Function to find the number of doji, bullish candles, and bearish candles
+# Function to find the number of doji, bullish candles, and bearish candles.
 def find_all_candle_types(df):
     # the number of each type of candle
     num_doji = 0
@@ -87,6 +87,32 @@ def find_all_candle_types(df):
     return [['Bullish', num_bull], ['Bearish', num_bear], ['Doji', num_doji]]
 
 
+# Determines if there is a downtrend before this candle.
+def downtrend(df, candle_index):
+    # Gets the bottom of the previous candle and this candle.
+    bot_of_prev_candle = min(df.iloc[candle_index-1]['Close'], df.iloc[candle_index-1]['Open'])
+    bot_of_this_candle = min(df.iloc[candle_index]['Close'], df.iloc[candle_index]['Open'])
+    
+    # There's a downtrend if the bottom of the previous candle is above the bottom of this candle. 
+    downtrend = bot_of_prev_candle > bot_of_this_candle
+    
+    # Returns a boolean value of whether or not there's a downtrend preceding this candle. 
+    return downtrend
+
+
+# Determines if there is an uptrend before this candle.
+def uptrend(df, candle_index):
+    # Gets the top of the previous candle and this candle.
+    top_of_prev_candle = max(df.iloc[candle_index-1]['Close'], df.iloc[candle_index-1]['Open'])
+    top_of_this_candle = max(df.iloc[candle_index]['Close'], df.iloc[candle_index]['Open'])
+    
+    # There's an uptrend if the top of the previous candle is below the top of this candle. 
+    uptrend = top_of_prev_candle < top_of_this_candle
+    
+    # Returns a boolean value of whether or not there's a downtrend preceding this candle. 
+    return uptrend
+
+
 # Candlestick strategies.
 class Strats:
     def bullish_engulfing(df):
@@ -104,9 +130,8 @@ class Strats:
         # Runs for every row in df (every candle).
         # Starts with 1 candle preceding, ends with 3 candles following.
         for i in range(1, dfLen - 3):
-            # Runs if the bottom of the candle before this one is above this one's bottom (it's close). 
-            # This checks for preceding downtrend.
-            if (min(df.iloc[i-1]['Close'], df.iloc[i-1]['Open']) > df.iloc[i]['Close']):
+            # Runs if there's a preceding downtrend.
+            if (downtrend(df, i)):
                 # Runs if the candle is bearish.
                 if (candle_type(df.iloc[i]) == 'bear'):
                     # Checks to see if the next candle opens below and closes above this one's body
@@ -146,9 +171,8 @@ class Strats:
         # Runs for every row in df (every candle).
         # Starts with 1 candle preceding, ends with 3 candles following.
         for i in range(1, dfLen - 3):
-            # Runs if the top of the candle before this one is below this one's top (it's close). 
-            # This checks for preceding uptrend.
-            if (max(df.iloc[i-1]['Close'], df.iloc[i-1]['Open']) < df.iloc[i]['Close']):
+            # Runs if there's a preceding uptrend.
+            if (uptrend(df, i)):
                 # Runs if the candle is bullish.
                 if (candle_type(df.iloc[i]) == 'bull'):
                     # Checks to see if the next candle opens above and closes below this one's body
