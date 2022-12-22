@@ -197,5 +197,52 @@ class Strats:
         return succ_rate
     
     
+    def piercing(df):
+        # The dates where this strategy occurs, succeeds, and fails.
+        dates = []
+        dates_succ = []
+        dates_fail = []
+        
+        # The number of times this strategy is effective.
+        num_effec = 0
+        
+        # The number of candles.
+        dfLen = len(df.index)
+        
+        # Runs for every row in df (every candle).
+        # Starts with 1 candle preceding, ends with 3 candles following.
+        for i in range(1, dfLen - 3):
+            # Runs if there's a preceding downtrend.
+            if (downtrend(df, i)):
+                # Runs if the candle is bearish.
+                if (candle_type(df.iloc[i]) == 'bear'):
+                    # Checks if the next candle opens below this one's bottom (close).
+                    if (df.iloc[i+1]['Open'] < df.iloc[i]['Close']):
+                        # The middle of this candle's body.
+                        mid_candle = df.iloc[i]['Close'] + ((df.iloc[i]['Open'] - df.iloc[i]['Close']) / 2)
+                        
+                        # Checks if the next candle closes above the middle of this one's body.
+                        if (df.iloc[i+1]['Close'] > mid_candle):
+                            # Records the date that this strategy at.
+                            date = df.iloc[i]['Date']
+                            dates.append([date])
+                            
+                            # Runs if the candle 2 after the bullish closes higher than the bullish.
+                            if (df.iloc[i+3]['Close'] > df.iloc[i+1]['Close']):
+                                # The strategy is a success!
+                                num_effec += 1
+                                dates_succ.append(date)
+                                dates[len(dates)-1].append('succ')
+                            else:
+                                # The strategy is a failure :(
+                                dates_fail.append(date)
+                                dates[len(dates)-1].append('fail')
+        
+        # The success rate of the strategy.
+        succ_rate = len(dates_succ) / len(dates)
+        
+        return succ_rate
+    
+    
 
 
