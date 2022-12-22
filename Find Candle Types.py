@@ -53,7 +53,12 @@ def candle_type(candle):
     body_size = abs(candle['Open'] - candle['Close'])
     total_size = candle['High'] - candle['Low']
     
-    if (body_size / total_size <= DOJI_LIMIT):
+    if (total_size == 0):
+        # The low, high, open, and close are all the same.
+        # This is extremely rare but technically not impossible, 
+        # so this case exists to ensure no ZeroDivisionError.
+        return 4
+    elif (body_size / total_size <= DOJI_LIMIT):
         # It's a doji.
         return 3
     elif (candle['Close'] > candle['Open']):
@@ -88,4 +93,3 @@ def find_candle_types():
 
 
 print(find_candle_types())
-print(df.info)
