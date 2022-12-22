@@ -101,10 +101,12 @@ class Strats:
         # The number of candles.
         dfLen = len(df.index)
         
-        # Runs for every row in df (every candle)
-        for i in range(dfLen):
-            # Runs if there's at least 3 more candle after this one.
-            if (i < dfLen - 3):
+        # Runs for every row in df (every candle).
+        # Starts with 1 candle preceding, ends with 3 candles following.
+        for i in range(1, dfLen - 3):
+            # Runs if the bottom of the candle before this one is above this one's bottom (it's close). 
+            # This checks for preceding downtrend.
+            if (min(df.iloc[i-1]['Close'], df.iloc[i-1]['Open']) > df.iloc[i]['Close']):
                 # Runs if the candle is bearish.
                 if (candle_type(df.iloc[i]) == 'bear'):
                     # Checks to see if the next candle opens below and closes above this one's body
@@ -141,10 +143,12 @@ class Strats:
         # The number of candles.
         dfLen = len(df.index)
         
-        # Runs for every row in df (every candle)
-        for i in range(dfLen):
-            # Runs if there's at least 3 more candle after this one.
-            if (i < dfLen - 3):
+        # Runs for every row in df (every candle).
+        # Starts with 1 candle preceding, ends with 3 candles following.
+        for i in range(1, dfLen - 3):
+            # Runs if the top of the candle before this one is below this one's top (it's close). 
+            # This checks for preceding uptrend.
+            if (max(df.iloc[i-1]['Close'], df.iloc[i-1]['Open']) < df.iloc[i]['Close']):
                 # Runs if the candle is bullish.
                 if (candle_type(df.iloc[i]) == 'bull'):
                     # Checks to see if the next candle opens above and closes below this one's body
