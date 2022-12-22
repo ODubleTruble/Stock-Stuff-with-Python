@@ -88,3 +88,4 @@ def find_candle_types():
 
 
 print(find_candle_types())
+print(df.info)
