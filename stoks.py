@@ -20,7 +20,7 @@ def get_stock_data(ticker, start_date, end_date):
     return df
 
 
-# Determines if a candle is bullish (returns 1), bearish (2), or a doji (3).
+# Determines if a candle is bullish (returns bull), bearish (bear), or a doji (doji).
 def candle_type(candle):
     '''
     There are 2 main methods I found to determine if a candle is a doji.
@@ -53,16 +53,16 @@ def candle_type(candle):
         # The low, high, open, and close are all the same.
         # This is extremely rare but technically not impossible, 
         # so this case exists to ensure no ZeroDivisionError.
-        return 4
+        return 'empty'
     elif (body_size / total_size <= DOJI_LIMIT):
         # It's a doji.
-        return 3
+        return 'doji'
     elif (candle['Close'] > candle['Open']):
         # It's bullish.
-        return 1
+        return 'bull'
     elif (candle['Close'] < candle['Open']):
         # It's bearish.
-        return 2
+        return 'bear'
 
 
 # Function to find the number of doji, bullish candles, and bearish candles
@@ -74,16 +74,100 @@ def find_all_candle_types(df):
     
     # Runs for every row in df.
     for i in range(len(df.index)):
-        # Runs if the close is above the open, meaning the candle is bullish.
-        if (candle_type(df.iloc[i]) == 1):
+        if (candle_type(df.iloc[i]) == 'bull'):
             # Increases num_bull by one. 
             num_bull += 1
-        elif (candle_type(df.iloc[i]) == 2):
+        elif (candle_type(df.iloc[i]) == 'bear'):
             # Increases num_bear by one. 
             num_bear += 1
-        elif (candle_type(df.iloc[i]) == 3):
+        elif (candle_type(df.iloc[i]) == 'doji'):
             # Increases num_doji by one.
             num_doji += 1
             
     return [['Bullish', num_bull], ['Bearish', num_bear], ['Doji', num_doji]]
+
+
+# Candlestick strategies.
+class Strats:
+    def bullish_engulfing(df):
+        # The dates where this strategy occurs, succeeds, and fails.
+        dates = []
+        dates_succ = []
+        dates_fail = []
+        
+        # The number of times this strategy is effective.
+        num_effec = 0
+        
+        # The number of candles.
+        dfLen = len(df.index)
+        
+        # Runs for every row in df (every candle)
+        for i in range(dfLen):
+            # Runs if there's at least 3 more candle after this one.
+            if (i < dfLen - 3):
+                # Runs if the candle is bearish.
+                if (candle_type(df.iloc[i]) == 'bear'):
+                    # Checks to see if the next candle opens below and closes above this one's body
+                    if (df.iloc[i+1]['Open'] < df.iloc[i]['Close'] and df.iloc[i+1]['Close'] > df.iloc[i]['Open']):
+                        # Records the date that this strategy at.
+                        date = df.iloc[i]['Date']
+                        dates.append([date])
+                        # Runs if the candle 2 after the bullish closes higher than the bullish.
+                        if (df.iloc[i+3]['Close'] > df.iloc[i+1]['Close']):
+                            # The strategy is a success!
+                            num_effec += 1
+                            dates_succ.append(date)
+                            dates[len(dates)-1].append('succ')
+                        else:
+                            # The strategy is a failure :(
+                            dates_fail.append(date)
+                            dates[len(dates)-1].append('fail')
+        
+        # The success rate of the strategy.
+        succ_rate = len(dates_succ) / len(dates)
+        
+        return succ_rate
+    
+    
+    def bearish_engulfing(df):
+        # The dates where this strategy occurs, succeeds, and fails.
+        dates = []
+        dates_succ = []
+        dates_fail = []
+        
+        # The number of times this strategy is effective.
+        num_effec = 0
+        
+        # The number of candles.
+        dfLen = len(df.index)
+        
+        # Runs for every row in df (every candle)
+        for i in range(dfLen):
+            # Runs if there's at least 3 more candle after this one.
+            if (i < dfLen - 3):
+                # Runs if the candle is bullish.
+                if (candle_type(df.iloc[i]) == 'bull'):
+                    # Checks to see if the next candle opens above and closes below this one's body
+                    if (df.iloc[i+1]['Open'] > df.iloc[i]['Close'] and df.iloc[i+1]['Close'] < df.iloc[i]['Open']):
+                        # Records the date that this strategy at.
+                        date = df.iloc[i]['Date']
+                        dates.append([date])
+                        # Runs if the candle 2 after the bearish closes lower than the bearish.
+                        if (df.iloc[i+3]['Close'] < df.iloc[i+1]['Close']):
+                            # The strategy is a success!
+                            num_effec += 1
+                            dates_succ.append(date)
+                            dates[len(dates)-1].append('succ')
+                        else:
+                            # The strategy is a failure :(
+                            dates_fail.append(date)
+                            dates[len(dates)-1].append('fail')
+        
+        # The success rate of the strategy.
+        succ_rate = len(dates_succ) / len(dates)
+        
+        return succ_rate
+    
+    
+
 
