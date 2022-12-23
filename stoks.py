@@ -282,5 +282,51 @@ class Strats:
         return succ_rate
     
     
+    def dark_cloud_cover(df, ema):
+        # The dates where this strategy occurs, succeeds, and fails.
+        dates = []
+        dates_succ = []
+        dates_fail = []
+        
+        # The number of times this strategy is effective.
+        num_effec = 0
+        
+        # The number of candles.
+        dfLen = len(df.index)
+        
+        # Runs for every row in df (every candle).
+        # Starts with 0 candle preceding, ends with 3 candles following.
+        for i in range(0, dfLen - 3):
+            # Runs if there's a preceding uptrend.
+            if (uptrend(ema, i)):
+                # Runs if the candle is bullish.
+                if (candle_type(df.iloc[i]) == 'bull'):
+                    # Checks if the next candle opens above this one's top (close).
+                    if (df.iloc[i+1]['Open'] > df.iloc[i]['Close']):
+                        # The middle of this candle's body.
+                        mid_candle = df.iloc[i]['Open'] + ((df.iloc[i]['Close'] - df.iloc[i]['Open']) / 2)
+                        
+                        # Checks if the next candle closes below the middle of this one's body.
+                        if (df.iloc[i+1]['Close'] < mid_candle):
+                            # Records the date that this strategy at.
+                            date = df.iloc[i]['Date']
+                            dates.append([date])
+                            
+                            # Runs if the strat is successful.
+                            if (is_succ(ema, i+1, 'bear')):
+                                # The strategy is a success!
+                                num_effec += 1
+                                dates_succ.append(date)
+                                dates[len(dates)-1].append('succ')
+                            else:
+                                # The strategy is a failure :(
+                                dates_fail.append(date)
+                                dates[len(dates)-1].append('fail')
+        
+        # The success rate of the strategy.
+        succ_rate = len(dates_succ) / len(dates)
+        
+        return succ_rate
+    
 
 
