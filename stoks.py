@@ -65,6 +65,30 @@ def candle_type(candle):
         return 'bear'
 
 
+# Determines the specific type of candle a candle is.
+def candle_name(candle):
+    # The size of the body.
+    size_body = abs(candle['Close'] - candle['Open'])
+    
+    # The total size of the candle.
+    size_total = candle['High'] - candle['Low']
+    
+    # The size of the upper shadow.
+    size_upper = candle['High'] - max(candle['Close'], candle['Open'])
+    
+    # The size of the lower shadow.
+    size_lower = min(candle['Close'], candle['Open']) - candle['Low']
+    
+    
+    # Determines the candle name.
+    if (size_lower > size_body * 2 and size_upper / size_total < 0.1):
+        return 'hammer'
+    elif (size_upper > size_body * 2 and size_lower / size_total < 0.1):
+        return 'shooting star'
+
+    return 'idk'
+
+
 # Function to find the number of doji, bullish candles, and bearish candles.
 def find_all_candle_types(df):
     # the number of each type of candle
@@ -328,5 +352,83 @@ class Strats:
         
         return succ_rate
     
-
+    
+    def hammer(df, ema):
+        # The dates where this strategy occurs, succeeds, and fails.
+        dates = []
+        dates_succ = []
+        dates_fail = []
+        
+        # The number of times this strategy is effective.
+        num_effec = 0
+        
+        # The number of candles.
+        dfLen = len(df.index)
+        
+        # Runs for every row in df (every candle).
+        # Starts with 0 candle preceding, ends with 2 candles following.
+        for i in range(0, dfLen - 2):
+            # Runs if there's a preceding downtrend.
+            if (downtrend(ema, i)):
+                # Runs if the candle is a hammer.
+                if (candle_name(df.iloc[i]) == 'hammer'):
+                    # Records the date that this strategy at.
+                    date = df.iloc[i]['Date']
+                    dates.append([date])
+                    # Runs if the strat is successful.
+                    if (is_succ(ema, i, 'bull')):
+                        # The strategy is a success!
+                        num_effec += 1
+                        dates_succ.append(date)
+                        dates[len(dates)-1].append('succ')
+                    else:
+                        # The strategy is a failure :(
+                        dates_fail.append(date)
+                        dates[len(dates)-1].append('fail')
+        
+        # The success rate of the strategy.
+        succ_rate = len(dates_succ) / len(dates)
+        
+        return [succ_rate, len(dates)]
+    
+    
+    def shooting_star(df, ema):
+        # The dates where this strategy occurs, succeeds, and fails.
+        dates = []
+        dates_succ = []
+        dates_fail = []
+        
+        # The number of times this strategy is effective.
+        num_effec = 0
+        
+        # The number of candles.
+        dfLen = len(df.index)
+        
+        # Runs for every row in df (every candle).
+        # Starts with 0 candle preceding, ends with 2 candles following.
+        for i in range(0, dfLen - 2):
+            # Runs if there's a preceding downtrend.
+            if (downtrend(ema, i)):
+                # Runs if the candle is a shooting star.
+                if (candle_name(df.iloc[i]) == 'shooting star'):
+                    # Records the date that this strategy at.
+                    date = df.iloc[i]['Date']
+                    dates.append([date])
+                    # Runs if the strat is successful.
+                    if (is_succ(ema, i, 'bear')):
+                        # The strategy is a success!
+                        num_effec += 1
+                        dates_succ.append(date)
+                        dates[len(dates)-1].append('succ')
+                    else:
+                        # The strategy is a failure :(
+                        dates_fail.append(date)
+                        dates[len(dates)-1].append('fail')
+        
+        # The success rate of the strategy.
+        succ_rate = len(dates_succ) / len(dates)
+        
+        return [succ_rate, len(dates)]
+    
+    
 
