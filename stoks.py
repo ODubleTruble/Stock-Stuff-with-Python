@@ -105,6 +105,28 @@ def uptrend(ema, candle_index):
     return uptrend
 
 
+# Determines if a strat is successful.
+# candle_index is the index of the last candle in the pattern
+# strat_type is either 'bull' or 'bear'
+def is_succ(ema, candle_index, strat_type):
+    # Whether or not the strat is successful. 
+    succ = False
+    
+    # Runs if the strat type is bullish, meaning the EMA is supposed to rise. 
+    if (strat_type == 'bull'):
+        # Runs if the ema increased.
+        if (ema[candle_index+2] > ema[candle_index]):
+            # Says the strat was successful. 
+            succ = True
+    elif (strat_type == 'bear'):
+        # Runs if the ema decreased.
+        if (ema[candle_index+2] < ema[candle_index]):
+            # Says the strat was successful. 
+            succ = True
+    
+    return succ
+
+
 # Finds the exponential moving average from stock data.
 # It's used to identify the trend and momentum of a stock's price.
 # It is calculated by taking a certain number of periods (e.g., 12, 26, 50) of the
@@ -155,8 +177,8 @@ class Strats:
                         # Records the date that this strategy at.
                         date = df.iloc[i]['Date']
                         dates.append([date])
-                        # Runs if the candle 2 after the bullish closes higher than the bullish.
-                        if (df.iloc[i+3]['Close'] > df.iloc[i+1]['Close']):
+                        # Runs if the strat is successful.
+                        if (is_succ(ema, i+1, 'bull')):
                             # The strategy is a success!
                             num_effec += 1
                             dates_succ.append(date)
@@ -196,8 +218,8 @@ class Strats:
                         # Records the date that this strategy at.
                         date = df.iloc[i]['Date']
                         dates.append([date])
-                        # Runs if the candle 2 after the bearish closes lower than the bearish.
-                        if (df.iloc[i+3]['Close'] < df.iloc[i+1]['Close']):
+                        # Runs if the strat is successful.
+                        if (is_succ(ema, i+1, 'bear')):
                             # The strategy is a success!
                             num_effec += 1
                             dates_succ.append(date)
@@ -243,8 +265,8 @@ class Strats:
                             date = df.iloc[i]['Date']
                             dates.append([date])
                             
-                            # Runs if the candle 2 after the bullish closes higher than the bullish.
-                            if (df.iloc[i+3]['Close'] > df.iloc[i+1]['Close']):
+                            # Runs if the strat is successful.
+                            if (is_succ(ema, i+1, 'bull')):
                                 # The strategy is a success!
                                 num_effec += 1
                                 dates_succ.append(date)
