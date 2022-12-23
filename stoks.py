@@ -88,30 +88,21 @@ def find_all_candle_types(df):
 
 
 # Determines if there is a downtrend before this candle.
-def downtrend(df, candle_index):
-    # Gets the bottom of the previous candle and this candle.
-    bot_of_prev_candle = min(df.iloc[candle_index-1]['Close'], df.iloc[candle_index-1]['Open'])
-    bot_of_this_candle = min(df.iloc[candle_index]['Close'], df.iloc[candle_index]['Open'])
-    
-    # There's a downtrend if the bottom of the previous candle is above the bottom of this candle. 
-    downtrend = bot_of_prev_candle > bot_of_this_candle
+def downtrend(ema, candle_index):
+    # There's a downtrend if this candle's ema is lower than the previous candle's. 
+    downtrend = ema[candle_index] < ema[candle_index-1]
     
     # Returns a boolean value of whether or not there's a downtrend preceding this candle. 
     return downtrend
 
 
 # Determines if there is an uptrend before this candle.
-def uptrend(df, candle_index):
-    # Gets the top of the previous candle and this candle.
-    top_of_prev_candle = max(df.iloc[candle_index-1]['Close'], df.iloc[candle_index-1]['Open'])
-    top_of_this_candle = max(df.iloc[candle_index]['Close'], df.iloc[candle_index]['Open'])
+def uptrend(ema, candle_index):
+    # There's an uptrend if this candle's ema is above than the previous candle's. 
+    uptrend = ema[candle_index] > ema[candle_index-1]
     
-    # There's an uptrend if the top of the previous candle is below the top of this candle. 
-    uptrend = top_of_prev_candle < top_of_this_candle
-    
-    # Returns a boolean value of whether or not there's a downtrend preceding this candle. 
+    # Returns a boolean value of whether or not there's an uptrend preceding this candle. 
     return uptrend
-
 
 
 # Finds the exponential moving average from stock data.
@@ -140,7 +131,7 @@ def ema(df):
 
 # Candlestick strategies.
 class Strats:
-    def bullish_engulfing(df):
+    def bullish_engulfing(df, ema):
         # The dates where this strategy occurs, succeeds, and fails.
         dates = []
         dates_succ = []
@@ -153,10 +144,10 @@ class Strats:
         dfLen = len(df.index)
         
         # Runs for every row in df (every candle).
-        # Starts with 1 candle preceding, ends with 3 candles following.
-        for i in range(1, dfLen - 3):
+        # Starts with 0 candle preceding, ends with 3 candles following.
+        for i in range(0, dfLen - 3):
             # Runs if there's a preceding downtrend.
-            if (downtrend(df, i)):
+            if (downtrend(ema, i)):
                 # Runs if the candle is bearish.
                 if (candle_type(df.iloc[i]) == 'bear'):
                     # Checks to see if the next candle opens below and closes above this one's body
@@ -181,7 +172,7 @@ class Strats:
         return succ_rate
     
     
-    def bearish_engulfing(df):
+    def bearish_engulfing(df, ema):
         # The dates where this strategy occurs, succeeds, and fails.
         dates = []
         dates_succ = []
@@ -194,10 +185,10 @@ class Strats:
         dfLen = len(df.index)
         
         # Runs for every row in df (every candle).
-        # Starts with 1 candle preceding, ends with 3 candles following.
-        for i in range(1, dfLen - 3):
+        # Starts with 0 candle preceding, ends with 3 candles following.
+        for i in range(0, dfLen - 3):
             # Runs if there's a preceding uptrend.
-            if (uptrend(df, i)):
+            if (uptrend(ema, i)):
                 # Runs if the candle is bullish.
                 if (candle_type(df.iloc[i]) == 'bull'):
                     # Checks to see if the next candle opens above and closes below this one's body
@@ -222,7 +213,7 @@ class Strats:
         return succ_rate
     
     
-    def piercing(df):
+    def piercing(df, ema):
         # The dates where this strategy occurs, succeeds, and fails.
         dates = []
         dates_succ = []
@@ -235,10 +226,10 @@ class Strats:
         dfLen = len(df.index)
         
         # Runs for every row in df (every candle).
-        # Starts with 1 candle preceding, ends with 3 candles following.
-        for i in range(1, dfLen - 3):
+        # Starts with 0 candle preceding, ends with 3 candles following.
+        for i in range(0, dfLen - 3):
             # Runs if there's a preceding downtrend.
-            if (downtrend(df, i)):
+            if (downtrend(ema, i)):
                 # Runs if the candle is bearish.
                 if (candle_type(df.iloc[i]) == 'bear'):
                     # Checks if the next candle opens below this one's bottom (close).
