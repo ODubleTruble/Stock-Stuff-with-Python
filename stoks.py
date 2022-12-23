@@ -389,7 +389,7 @@ class Strats:
         # The success rate of the strategy.
         succ_rate = len(dates_succ) / len(dates)
         
-        return [succ_rate, len(dates)]
+        return succ_rate
     
     
     def shooting_star(df, ema):
@@ -428,7 +428,7 @@ class Strats:
         # The success rate of the strategy.
         succ_rate = len(dates_succ) / len(dates)
         
-        return [succ_rate, len(dates)]
+        return succ_rate
     
     
 
