@@ -113,6 +113,31 @@ def uptrend(df, candle_index):
     return uptrend
 
 
+
+# Finds the exponential moving average from stock data.
+# It's used to identify the trend and momentum of a stock's price.
+# It is calculated by taking a certain number of periods (e.g., 12, 26, 50) of the
+# stock's price and weighting them exponentially. The most recent periods are given
+# a higher weight, while older periods are given a lower weight.
+def ema(df):
+    # The number of periods to include.
+    pds_to_incl = 9
+    
+    # The smoothing factor.
+    smooth = 2 / (pds_to_incl + 1)
+    
+    # A list storing the ema.
+    # The first ema will just be the first candle's closing price.
+    ema = [df.iloc[0]['Close']]
+    
+    # Runs for every candle except the first one.
+    for i in range(1, len(df.index)):
+        ema.append((df.iloc[i]['Close'] * smooth) + (ema[i-1] * (1-smooth)))
+
+    # Returns a list of the ema for each candle.
+    return ema
+
+
 # Candlestick strategies.
 class Strats:
     def bullish_engulfing(df):
